@@ -8,7 +8,7 @@
 
 import SpriteKit
 
-class GameScene: SKScene
+class GameScene: SKScene, SKPhysicsContactDelegate
 {
     override func didMove(to view: SKView)
     {
@@ -19,6 +19,7 @@ class GameScene: SKScene
         addChild(background);
         
         physicsBody = SKPhysicsBody(edgeLoopFrom: frame);
+        physicsWorld.contactDelegate = self;
         
         createSlots();
         createBouncers();
@@ -31,7 +32,9 @@ class GameScene: SKScene
         {
             let location = touch.location(in: self);
             let ball = SKSpriteNode(imageNamed: "ballRed");
+            ball.name = "ball";
             ball.physicsBody = SKPhysicsBody(circleOfRadius: ball.size.width / 2.0);
+            ball.physicsBody!.contactTestBitMask = ball.physicsBody!.collisionBitMask;
             ball.physicsBody!.restitution = 0.4;
             ball.position = location;
             addChild(ball);
@@ -41,6 +44,39 @@ class GameScene: SKScene
     override func update(_ currentTime: TimeInterval)
     {
         // Called before each frame is rendered
+    }
+}
+
+//MARK: Collision Functions
+extension GameScene
+{
+    func didBegin(_ contact: SKPhysicsContact)
+    {
+        //Ball collision
+        if contact.bodyA.node?.name == "ball"
+        {
+            collisionBetween(ball: contact.bodyA.node!, other: contact.bodyB.node!);
+        }
+        else if contact.bodyB.node?.name == "ball"
+        {
+            collisionBetween(ball: contact.bodyB.node!, other: contact.bodyA.node!);
+        }
+    }
+    
+    func collisionBetween(ball: SKNode, other: SKNode)
+    {
+        if let objectName = other.name
+        {
+            switch objectName
+            {
+            case "good":
+                destroy(object: ball);
+            case "bad":
+                destroy(object: ball);
+            default:
+                break;
+            }
+        }
     }
 }
 
@@ -62,6 +98,7 @@ extension GameScene
         let bouncer = SKSpriteNode(imageNamed: "bouncer");
         bouncer.position = position;
         bouncer.physicsBody = SKPhysicsBody(circleOfRadius: bouncer.size.width / 2.0);
+        bouncer.physicsBody!.contactTestBitMask = bouncer.physicsBody!.collisionBitMask;
         bouncer.physicsBody!.isDynamic = false;
         addChild(bouncer);
     }
@@ -79,7 +116,10 @@ extension GameScene
         var slotBase: SKSpriteNode;
         let slotImage: String = isGood ? "slotBaseGood" : "slotBaseBad";
         slotBase = SKSpriteNode(imageNamed: slotImage);
+        slotBase.name = isGood ? "good" : "bad";
         slotBase.position = position;
+        slotBase.physicsBody = SKPhysicsBody(rectangleOf: slotBase.size);
+        slotBase.physicsBody!.isDynamic = false;
         addChild(slotBase);
         
         var slotGlow: SKSpriteNode;
@@ -94,5 +134,10 @@ extension GameScene
         slotGlow.run(loopedAction);
         
         
+    }
+    
+    func destroy(object: SKNode)
+    {
+        object.removeFromParent();
     }
 }
