@@ -7,22 +7,34 @@
 //
 
 import SpriteKit
+import GameplayKit
 
 class GameScene: SKScene, SKPhysicsContactDelegate
 {
+    //Gameplay
+    var scoreLabel: SKLabelNode!;
+    var score: Int = 0
+    {
+        didSet
+        {
+            scoreLabel.text = "Score: \(score)";
+        }
+    }
+    
+    var isEditing: Bool = false
+    {
+        didSet
+        {
+            editLabel.text = isEditing ? "Done" : "Edit"
+        }
+    }
+    var editLabel: SKLabelNode!;
+    
+    
+    
     override func didMove(to view: SKView)
     {
-        let background = SKSpriteNode(imageNamed: "background.jpg")
-        background.position = CGPoint(x: 512, y: 384);
-        background.blendMode = .replace;
-        background.zPosition = -1;
-        addChild(background);
-        
-        physicsBody = SKPhysicsBody(edgeLoopFrom: frame);
-        physicsWorld.contactDelegate = self;
-        
-        createSlots();
-        createBouncers();
+        initScene();
     }
     
     
@@ -31,19 +43,48 @@ class GameScene: SKScene, SKPhysicsContactDelegate
         if let touch = touches.first
         {
             let location = touch.location(in: self);
-            let ball = SKSpriteNode(imageNamed: "ballRed");
-            ball.name = "ball";
-            ball.physicsBody = SKPhysicsBody(circleOfRadius: ball.size.width / 2.0);
-            ball.physicsBody!.contactTestBitMask = ball.physicsBody!.collisionBitMask;
-            ball.physicsBody!.restitution = 0.4;
-            ball.position = location;
-            addChild(ball);
+            
+            let objects = nodes(at: location);
+            
+            if objects.contains(editLabel)
+            {
+                isEditing = !isEditing;
+            }
+            else
+            {
+                if !isEditing
+                {
+                    createBall(location: location);
+                }
+                else
+                {
+                    createRandomBox(location: location);
+                }
+            }
         }
     }
     
-    override func update(_ currentTime: TimeInterval)
+    func createBall(location: CGPoint)
     {
-        // Called before each frame is rendered
+        let ball = SKSpriteNode(imageNamed: "ballRed");
+        ball.name = "ball";
+        ball.physicsBody = SKPhysicsBody(circleOfRadius: ball.size.width / 2.0);
+        ball.physicsBody!.contactTestBitMask = ball.physicsBody!.collisionBitMask;
+        ball.physicsBody!.restitution = 0.4;
+        ball.position = CGPoint(x: location.x, y: 768 - (ball.size.height / 2));
+        addChild(ball);
+    }
+    
+    func createRandomBox(location: CGPoint)
+    {
+        let size = CGSize(width: GKRandomDistribution(lowestValue: 64, highestValue: 128).nextInt(), height: 16);
+        let box = SKSpriteNode(color: RandomColor(), size: size);
+        box.zRotation = RandomCGFloat(min: 0, max: 3);
+        box.position = location;
+        box.physicsBody = SKPhysicsBody(rectangleOf: box.size);
+        box.physicsBody!.isDynamic = false;
+        
+        addChild(box);
     }
 }
 
@@ -52,30 +93,37 @@ extension GameScene
 {
     func didBegin(_ contact: SKPhysicsContact)
     {
-        //Ball collision
+        //Ball to any collision
         if contact.bodyA.node?.name == "ball"
         {
-            collisionBetween(ball: contact.bodyA.node!, other: contact.bodyB.node!);
+            guard let vNodeA = contact.bodyA.node else { return ;}
+            guard let vNodeB = contact.bodyB.node else { return ;}
+            
+            collisionBetween(ball: vNodeA, other: vNodeB);
         }
         else if contact.bodyB.node?.name == "ball"
         {
-            collisionBetween(ball: contact.bodyB.node!, other: contact.bodyA.node!);
+            guard let vNodeB = contact.bodyB.node else { return ;}
+            guard let vNodeA = contact.bodyA.node else { return ;}
+            
+            collisionBetween(ball: vNodeB, other: vNodeA);
         }
     }
     
     func collisionBetween(ball: SKNode, other: SKNode)
     {
-        if let objectName = other.name
+        guard let vNodeName = other.name else { return; }
+        
+        switch vNodeName
         {
-            switch objectName
-            {
-            case "good":
-                destroy(object: ball);
-            case "bad":
-                destroy(object: ball);
-            default:
-                break;
-            }
+        case "good":
+            score += 1;
+            destroyBall(ball: ball);
+        case "bad":
+            score -= 1;
+            destroyBall(ball: ball);
+        default:
+            break;
         }
     }
 }
@@ -84,6 +132,38 @@ extension GameScene
 extension GameScene
 {
 
+    func initScene()
+    {
+        //Background
+        let background = SKSpriteNode(imageNamed: "background.jpg")
+        background.position = CGPoint(x: 512, y: 384);
+        background.blendMode = .replace;
+        background.zPosition = -1;
+        addChild(background);
+        
+        //Scene
+        physicsBody = SKPhysicsBody(edgeLoopFrom: frame);
+        physicsWorld.contactDelegate = self;
+        
+        //Nodes
+        createSlots();
+        createBouncers();
+        
+        //UI
+        scoreLabel = SKLabelNode(fontNamed: "Chalkduster");
+        scoreLabel.text = "Score: 0";
+        scoreLabel.horizontalAlignmentMode = .right;
+        scoreLabel.position = CGPoint(x: 980, y: 700);
+        addChild(scoreLabel);
+        
+        editLabel = SKLabelNode(fontNamed: "Chalkduster");
+        editLabel.text = "Edit";
+        editLabel.horizontalAlignmentMode = .right;
+        editLabel.position = CGPoint(x: 120, y: 700);
+        addChild(editLabel);
+    }
+    
+    
     func createBouncers()
     {
         for index in 0..<5
@@ -136,8 +216,16 @@ extension GameScene
         
     }
     
-    func destroy(object: SKNode)
+    func destroyBall(ball: SKNode)
     {
-        object.removeFromParent();
+        ball.removeFromParent();
+        
+        guard let fireParticles = SKEmitterNode(fileNamed: "FireParticles") else { return; }
+        
+        fireParticles.position = ball.position;
+        let addAction = SKAction.run { self.addChild(fireParticles); }
+        let waitAction = SKAction.wait(forDuration: 2);
+        let removeAction = SKAction.run { fireParticles.removeFromParent(); }
+        run(SKAction.sequence([addAction, waitAction, removeAction]));
     }
 }

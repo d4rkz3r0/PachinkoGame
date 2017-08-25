@@ -42,6 +42,7 @@
 		BE3362CD1F4B3EB700901634 /* slotGlowGood.png in Resources */ = {isa = PBXBuildFile; fileRef = BE3362B11F4B3EB700901634 /* slotGlowGood.png */; };
 		BE3362CE1F4B3EB700901634 /* slotGlowGood@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = BE3362B21F4B3EB700901634 /* slotGlowGood@2x.png */; };
 		BE3362CF1F4B3EB700901634 /* spark.png in Resources */ = {isa = PBXBuildFile; fileRef = BE3362B31F4B3EB700901634 /* spark.png */; };
+		BE7D39751F4F867800B58988 /* RandomUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE7D39741F4F867800B58988 /* RandomUtil.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -82,6 +83,7 @@
 		BE3362B11F4B3EB700901634 /* slotGlowGood.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = slotGlowGood.png; sourceTree = "<group>"; };
 		BE3362B21F4B3EB700901634 /* slotGlowGood@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "slotGlowGood@2x.png"; sourceTree = "<group>"; };
 		BE3362B31F4B3EB700901634 /* spark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = spark.png; sourceTree = "<group>"; };
+		BE7D39741F4F867800B58988 /* RandomUtil.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RandomUtil.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,6 +120,7 @@
 				BE3362811F4B3BD000901634 /* GameScene.sks */,
 				BE3362851F4B3BD000901634 /* GameScene.swift */,
 				BE3362871F4B3BD000901634 /* GameViewController.swift */,
+				BE7D39741F4F867800B58988 /* RandomUtil.swift */,
 				BE3362891F4B3BD000901634 /* Main.storyboard */,
 				BE3362971F4B3EB700901634 /* Content */,
 				BE33628C1F4B3BD000901634 /* Assets.xcassets */,
@@ -267,6 +270,7 @@
 				BE3362861F4B3BD000901634 /* GameScene.swift in Sources */,
 				BE3362881F4B3BD000901634 /* GameViewController.swift in Sources */,
 				BE3362801F4B3BD000901634 /* AppDelegate.swift in Sources */,
+				BE7D39751F4F867800B58988 /* RandomUtil.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -432,6 +436,7 @@
 				BE3362961F4B3BD000901634 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
